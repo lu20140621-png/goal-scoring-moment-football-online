@@ -1,0 +1,116 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+  <title>Goal-Scoring Moment Football — Online</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="app">
+    <header class="topbar">
+      <div>
+        <div class="eyebrow">GOAL-SCORING MOMENT · FOOTBALL</div>
+        <h1>2-PLAYER ONLINE</h1>
+      </div>
+      <div class="net-pill"><span id="netDot" class="dot"></span><span id="netText">Offline</span></div>
+    </header>
+
+    <main>
+      <section class="scoreboard card-panel">
+        <div class="team red"><span>RED</span><b id="redBalls">0</b><small>FOOTBALLS</small></div>
+        <div class="center-score"><span id="roundText">ROUND 1</span><strong><span id="redProgress">50</span> : <span id="blueProgress">50</span></strong><small>FIELD POSITION</small></div>
+        <div class="team blue"><span>BLUE</span><b id="blueBalls">0</b><small>FOOTBALLS</small></div>
+      </section>
+
+      <section class="field card-panel">
+        <div class="yard-labels"><span>50</span><span>40</span><span>30</span><span>20</span><span>10</span><span>TD</span></div>
+        <div class="field-lanes">
+          <div class="lane red-lane"><span class="lane-name">RED DRIVE</span><div id="redMarker" class="marker red-marker">🏈</div></div>
+          <div class="lane blue-lane"><span class="lane-name">BLUE DRIVE</span><div id="blueMarker" class="marker blue-marker">🏈</div></div>
+        </div>
+        <div class="possession">POSSESSION: <b id="possessionText">—</b></div>
+      </section>
+
+      <section class="teams-grid">
+        <div class="card-panel roster-panel">
+          <h2>RED SQUAD</h2>
+          <div id="redRoster" class="roster"></div>
+        </div>
+        <div class="card-panel roster-panel">
+          <h2>BLUE SQUAD</h2>
+          <div id="blueRoster" class="roster"></div>
+        </div>
+      </section>
+
+      <section class="card-panel action-panel">
+        <div class="turn-line"><span id="turnPrompt">Create or join a room.</span></div>
+        <div id="actionButtons" class="action-buttons"></div>
+      </section>
+
+      <section class="card-panel hand-panel">
+        <div class="hand-head"><h2>YOUR HAND</h2><span id="myTeamText">—</span></div>
+        <div id="hand" class="hand"></div>
+      </section>
+
+      <section class="card-panel log-panel">
+        <div class="hand-head"><h2>GAME LOG</h2><button id="copyRoomBtn" class="mini-btn" hidden>COPY ROOM</button></div>
+        <div id="log" class="log"></div>
+      </section>
+    </main>
+  </div>
+
+  <div id="lobby" class="overlay show">
+    <div class="modal lobby-card">
+      <div class="logo-ball">🏈</div>
+      <h2>ONLINE MATCH</h2>
+      <p>One player hosts RED. The other joins as BLUE.</p>
+      <button id="createBtn" class="primary">CREATE GAME</button>
+      <div class="divider">OR</div>
+      <input id="roomInput" maxlength="6" inputmode="numeric" placeholder="6-DIGIT ROOM CODE" />
+      <button id="joinBtn" class="secondary">JOIN GAME</button>
+      <p id="lobbyStatus" class="status-text"></p>
+    </div>
+  </div>
+
+  <div id="hostSetup" class="overlay">
+    <div class="modal">
+      <h2>ROOM <span id="roomCodeText">------</span></h2>
+      <p id="guestWaitText">Waiting for BLUE player…</p>
+      <div class="setup-row">
+        <label>Team size</label>
+        <div class="segmented">
+          <button data-size="2" class="size-btn active">2v2</button>
+          <button data-size="3" class="size-btn">3v3</button>
+          <button data-size="4" class="size-btn">4v4</button>
+        </div>
+      </div>
+      <button id="startBtn" class="primary" disabled>START MATCH</button>
+    </div>
+  </div>
+
+  <div id="rpsOverlay" class="overlay">
+    <div class="modal">
+      <h2>ROCK · PAPER · SCISSORS</h2>
+      <p>Winner gets first possession.</p>
+      <div class="rps-grid">
+        <button data-rps="rock">✊<span>ROCK</span></button>
+        <button data-rps="paper">✋<span>PAPER</span></button>
+        <button data-rps="scissors">✌️<span>SCISSORS</span></button>
+      </div>
+      <p id="rpsStatus" class="status-text">Choose one.</p>
+    </div>
+  </div>
+
+  <div id="gameOver" class="overlay">
+    <div class="modal">
+      <div class="logo-ball">🏈</div>
+      <h2 id="winnerText">GAME OVER</h2>
+      <button onclick="location.reload()" class="primary">NEW MATCH</button>
+    </div>
+  </div>
+
+  <script src="https://unpkg.com/peerjs@1.5.5/dist/peerjs.min.js"></script>
+  <script src="game.js"></script>
+</body>
+</html>
