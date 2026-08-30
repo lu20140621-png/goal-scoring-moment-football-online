@@ -117,13 +117,25 @@ function bindConn(c,isHost){
 }
 function createRoom(){
   roomCode=randomCode();netRole='host';myTeam='red';setNet('Creating room…');
-  peer=new Peer('gsm-football-'+roomCode);
+  peer=new Peer('gsm-football-'+roomCode,{
+  host:'0.peerjs.com',
+  port:443,
+  path:'/',
+  secure:true,
+  debug:2
+});
   peer.on('open',()=>{show('lobby',false);show('hostSetup',true);$('roomCodeText').textContent=roomCode;$('copyRoomBtn').hidden=false;setNet('Waiting for BLUE',false);});
   peer.on('connection',c=>{if(conn&&conn.open){c.close();return;}bindConn(c,true)});
   peer.on('error',e=>{$('lobbyStatus').textContent='Could not create room. Try again.';setNet('Offline',false);console.error(e)});
 }
 function joinRoom(){
-  const code=$('roomInput').value.replace(/\D/g,'').slice(0,6);if(code.length!==6){$('lobbyStatus').textContent='Enter the 6-digit room code.';return;}roomCode=code;netRole='guest';myTeam='blue';setNet('Connecting…');peer=new Peer();peer.on('open',()=>{const c=peer.connect('gsm-football-'+code,{reliable:true});bindConn(c,false)});peer.on('error',e=>{$('lobbyStatus').textContent='Room not found or connection failed.';setNet('Offline',false);console.error(e)});
+  const code=$('roomInput').value.replace(/\D/g,'').slice(0,6);if(code.length!==6){$('lobbyStatus').textContent='Enter the 6-digit room code.';return;}roomCode=code;netRole='guest';myTeam='blue';setNet('Connecting…');peer=new Peer(undefined,{
+  host:'0.peerjs.com',
+  port:443,
+  path:'/',
+  secure:true,
+  debug:2
+});;peer.on('open',()=>{const c=peer.connect('gsm-football-'+code,{reliable:true});bindConn(c,false)});peer.on('error',e=>{$('lobbyStatus').textContent='Room not found or connection failed.';setNet('Offline',false);console.error(e)});
 }
 
 function progressToLeft(n){return `${2+n*19}%`}
