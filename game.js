@@ -20,6 +20,77 @@ const $=id=>document.getElementById(id);
 let peer=null,conn=null,netRole=null,myTeam=null,roomCode='',selectedSize=2,selectedPlayer=null;
 let G=null,VIEW=null;
 let reconnectTimer=null;
+let assetsReady=false;
+
+const GAME_ASSETS=[
+  CARD_IMG.RUN,
+  CARD_IMG.PASS,
+  CARD_IMG.TACKLE,
+  CARD_IMG.INTERCEPTION,
+  CARD_IMG.BLOCK,
+  CARD_IMG.BLITZ,
+  CARD_IMG.FOOTBALL
+];
+
+async function preloadGameAssets(){
+  assetsReady=false;
+
+  const screen=$('loadingScreen');
+  const fill=$('loadingFill');
+  const percent=$('loadingPercent');
+  const text=$('loadingText');
+  const retry=$('retryLoadBtn');
+
+  screen.classList.remove('done');
+  retry.hidden=true;
+  fill.style.width='0%';
+  percent.textContent='0%';
+  text.textContent='Loading card images...';
+
+  let loaded=0;
+
+  try{
+    await Promise.all(
+      GAME_ASSETS.map(src=>new Promise((resolve,reject)=>{
+        const img=new Image();
+
+        img.onload=()=>{
+          loaded++;
+          const p=Math.round(
+            loaded/GAME_ASSETS.length*100
+          );
+
+          fill.style.width=p+'%';
+          percent.textContent=p+'%';
+          resolve();
+        };
+
+        img.onerror=()=>{
+          reject(new Error('Failed to load '+src));
+        };
+
+        img.src=src;
+      }))
+    );
+
+    fill.style.width='100%';
+    percent.textContent='100%';
+    text.textContent='Ready!';
+
+    assetsReady=true;
+
+    setTimeout(()=>{
+      screen.classList.add('done');
+    },350);
+
+  }catch(err){
+    console.error(err);
+    text.textContent='Some images failed to load.';
+    retry.hidden=false;
+  }
+}
+
+$('retryLoadBtn').onclick=preloadGameAssets;
 function show(id,on=true){$(id).classList.toggle('show',on)}
 function setNet(text,on=false){$('netText').textContent=text;$('netDot').classList.toggle('on',on)}
 function addLocalLog(msg){if(netRole==='host'&&G){G.logs.push(msg);if(G.logs.length>80)G.logs.shift();} }
