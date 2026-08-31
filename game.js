@@ -176,7 +176,7 @@ function selectCarrier(team,pid){if(G.phase!=='choose'||team!==G.offense)return;
 function playAttack(team,pid,card){if(G.phase!=='attack'||team!==G.offense||pid!==G.holder||!['RUN','PASS'].includes(card))return;if(!removeCard(pid,card))return;G.pending={action:card,attacker:pid,receiver:null,defense:null,defender:null,qbBoost:false};if(card==='RUN'){G.phase='defense';G.logs.push(`${pid} plays RUN.`);}else{G.phase='receiver';G.logs.push(`${pid} plays PASS. Choose a receiver.`);}broadcast();}
 function selectReceiver(team,pid){if(G.phase!=='receiver'||team!==G.offense)return;const p=player(pid),a=player(G.pending.attacker);if(!p||p.team!==team||pid===a.id)return;G.pending.receiver=pid;if(a.role==='QB'&&!a.skill)G.phase='qb';else G.phase='defense';G.logs.push(`${pid} is the PASS target.`);broadcast();}
 function qbSkill(team,use){if(G.phase!=='qb'||team!==G.offense)return;const a=player(G.pending.attacker);if(!a||a.role!=='QB'||a.skill)return;if(use){a.skill=true;G.pending.qbBoost=true;G.logs.push(`${a.id} uses the QB skill: a successful PASS advances 2 spaces.`);}G.phase='defense';broadcast();}
-function defend(team,pid,card){if(G.phase!=='defense'||team===G.offense)return;if(!card){G.logs.push(`${team.toUpperCase()} does not defend.`);return successPlay();}const a=G.pending.action;const valid=card==='BLITZ'||(a==='RUN'&&card==='TACKLE')||(a==='PASS'&&card==='INTERCEPTION');const p=player(pid);if(!valid||!p||p.team!==team||!removeCard(pid,card))return;G.pending.defense=card;G.pending.defender=pid;G.logs.push(`${pid} plays ${card==='BLITZ'?'BREAK THROUGH':card}.`);f(card==='BLITZ')return failPlay('BREAK THROUGH stops the play.');G.phase='block';broadcast();}
+function defend(team,pid,card){if(G.phase!=='defense'||team===G.offense)return;if(!card){G.logs.push(`${team.toUpperCase()} does not defend.`);return successPlay();}const a=G.pending.action;const valid=card==='BLITZ'||(a==='RUN'&&card==='TACKLE')||(a==='PASS'&&card==='INTERCEPTION');const p=player(pid);if(!valid||!p||p.team!==team||!removeCard(pid,card))return;G.pending.defense=card;G.pending.defender=pid;G.logs.push(`${pid} plays ${card==='BLITZ'?'BREAK THROUGH':card}.`);if(card==='BLITZ')return failPlay('BREAK THROUGH stops the play.');G.phase='block';broadcast();}
 function block(team,pid,card){if(G.phase!=='block'||team!==G.offense)return;if(!card){if(G.pending.defense==='INTERCEPTION')return interception();return failPlay(`${G.pending.defense} stops the play.`);}if(card!=='BLOCK')return;const p=player(pid);if(!p||p.team!==team||!removeCard(pid,'BLOCK'))return;G.logs.push(`${pid} plays BLOCK.`);G.phase='final';broadcast();}
 function finalBlitz(team,pid,card){if(G.phase!=='final'||team===G.offense)return;if(!card)return successPlay();if(card!=='BLITZ')return;const p=player(pid);if(!p||p.team!==team||!removeCard(pid,'BLITZ'))return;G.logs.push(`${pid} plays final BREAK THROUGH.`);return failPlay('Final BREAK THROUGH stops the play.');}
 function interception(){const d=G.pending.defender;G.holder=d;G.offense=player(d).team;G.logs.push(`${d} completes the INTERCEPTION. Possession changes.`);G.pending=null;afterPlay();}
@@ -318,10 +318,11 @@ function connectGuest(){
   bindConn(c,false);
 }
 
-function scheduleReconnect(){
+function hardReconnect(){
   if(netRole!=='guest' || !roomCode)return;
 
   setNet('Reconnecting…',false);
+  clearTimeout(reconnectTimer);
 
   try{
     if(conn){
@@ -330,7 +331,7 @@ function scheduleReconnect(){
   }catch(e){}
 
   try{
-    if(peer){
+    if(peer && !peer.destroyed){
       peer.destroy();
     }
   }catch(e){}
@@ -359,15 +360,18 @@ function scheduleReconnect(){
 
   },500);
 }
+
+function scheduleReconnect(){
   if(netRole!=='guest' || !roomCode)return;
 
   clearTimeout(reconnectTimer);
 
   reconnectTimer=setTimeout(()=>{
+
     if(!peer || peer.destroyed){
-  hardReconnect();
-  return;
-}
+      hardReconnect();
+      return;
+    }
 
     if(peer.disconnected){
       try{
@@ -382,6 +386,7 @@ function scheduleReconnect(){
     }else{
       peer.once('open',connectGuest);
     }
+
   },1200);
 }
 
