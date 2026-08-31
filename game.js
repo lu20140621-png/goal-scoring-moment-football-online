@@ -19,7 +19,7 @@ const POS=[50,40,30,20,10];
 const $=id=>document.getElementById(id);
 let peer=null,conn=null,netRole=null,myTeam=null,roomCode='',selectedSize=2,selectedPlayer=null;
 let G=null,VIEW=null;
-
+let reconnectTimer=null;
 function show(id,on=true){$(id).classList.toggle('show',on)}
 function setNet(text,on=false){$('netText').textContent=text;$('netDot').classList.toggle('on',on)}
 function addLocalLog(msg){if(netRole==='host'&&G){G.logs.push(msg);if(G.logs.length>80)G.logs.shift();} }
@@ -104,44 +104,249 @@ function afterPlay(){
   if(!G.holder||!player(G.holder).hand.some(c=>c==='RUN'||c==='PASS')){G.holder=null;G.phase='choose';broadcast();return;}
   G.phase='attack';broadcast();
 }
-
 function bindConn(c,isHost){
   conn=c;
-  conn.on('open',()=>{setNet(isHost?'BLUE connected':'Connected to RED',true);if(isHost){$('guestWaitText').textContent='BLUE player connected.';$('startBtn').disabled=false;}else{show('lobby',false);$('lobbyStatus').textContent='';}});
-  conn.on('data',msg=>{
-    if(isHost){if(msg?.type==='action')dispatch('blue',msg.action,msg.payload||{},msg.version||0);}
-    else if(msg?.type==='state'){VIEW=msg.state;render();if(VIEW.phase==='rps')show('rpsOverlay',true);else show('rpsOverlay',false);}
+
+  conn.on('open',()=>{
+    clearTimeout(reconnectTimer);
+    setNet(isHost?'BLUE connected':'Connected to RED',true);
+
+    if(isHost){
+      $('guestWaitText').textContent='BLUE player connected.';
+      $('startBtn').disabled=false;
+
+      // Reconnecting BLUE receives the current match state.
+      if(G){
+        c.send({
+          type:'state',
+          state:filtered('blue')
+        });
+      }
+    }else{
+      show('lobby',false);
+      $('lobbyStatus').textContent='';
+    }
   });
-  conn.on('close',()=>{setNet('Opponent disconnected',false);$('turnPrompt').textContent='Opponent disconnected.';});
-  conn.on('error',()=>setNet('Connection error',false));
+
+  conn.on('data',msg=>{
+    if(isHost){
+      if(msg?.type==='action'){
+        dispatch(
+          'blue',
+          msg.action,
+          msg.payload||{},
+          msg.version||0
+        );
+      }
+    }else if(msg?.type==='state'){
+      VIEW=msg.state;
+      render();
+
+      if(VIEW.phase==='rps'){
+        show('rpsOverlay',true);
+      }else{
+        show('rpsOverlay',false);
+      }
+    }
+  });
+
+  conn.on('close',()=>{
+    setNet(
+      isHost?'BLUE reconnecting…':'Reconnecting…',
+      false
+    );
+
+    $('turnPrompt').textContent=isHost
+      ?'Waiting for BLUE to reconnect…'
+      :'Reconnecting to RED…';
+
+    if(!isHost){
+      scheduleReconnect();
+    }
+  });
+
+  conn.on('error',()=>{
+    setNet(
+      isHost?'BLUE connection error':'Reconnecting…',
+      false
+    );
+
+    if(!isHost){
+      scheduleReconnect();
+    }
+  });
 }
-function createRoom(){
-  roomCode=randomCode();netRole='host';myTeam='red';setNet('Creating room…');
-  peer=new Peer('gsm-football-'+roomCode,{
-  host:'0.peerjs.com',
-  port:443,
-  path:'/',
-  secure:true,
-  debug:2
+
+function peerOptions(){
+  return {
+    host:'0.peerjs.com',
+    port:443,
+    path:'/',
+    secure:true,
+    debug:2
+  };
+}
+
+function connectGuest(){
+  if(
+    netRole!=='guest' ||
+    !peer ||
+    peer.destroyed ||
+    !peer.open ||
+    (conn && conn.open)
+  ) return;
+
+  setNet('Connecting…',false);
+
+  const c=peer.connect(
+    'gsm-football-'+roomCode,
+    {reliable:true}
+  );
+
+  bindConn(c,false);
+}
+
+function scheduleReconnect(){
+  if(netRole!=='guest' || !roomCode)return;
+
+  clearTimeout(reconnectTimer);
+
+  reconnectTimer=setTimeout(()=>{
+    if(!peer || peer.destroyed)return;
+
+    if(peer.disconnected){
+      try{
+        peer.reconnect();
+      }catch(e){
+        console.error(e);
+      }
+    }
+
+    if(peer.open){
+      connectGuest();
+    }else{
+      peer.once('open',connectGuest);
+    }
+  },1200);
+}
+
+function resumeConnection(){
+  if(netRole==='host'){
+    if(
+      peer &&
+      peer.disconnected &&
+      !peer.destroyed
+    ){
+      try{
+        peer.reconnect();
+      }catch(e){
+        console.error(e);
+      }
+    }
+  }else if(
+    netRole==='guest' &&
+    (!conn || !conn.open)
+  ){
+    scheduleReconnect();
+  }
+}
+
+document.addEventListener('visibilitychange',()=>{
+  if(!document.hidden){
+    resumeConnection();
+  }
 });
-  peer.on('open',()=>{show('lobby',false);show('hostSetup',true);$('roomCodeText').textContent=roomCode;$('copyRoomBtn').hidden=false;setNet('Waiting for BLUE',false);});
-  peer.on('connection',c=>{if(conn&&conn.open){c.close();return;}bindConn(c,true)});
-  peer.on('error',e=>{$('lobbyStatus').textContent='Could not create room. Try again.';setNet('Offline',false);console.error(e)});
+
+window.addEventListener('online',resumeConnection);
+window.addEventListener('pageshow',resumeConnection);
+
+function createRoom(){
+  roomCode=randomCode();
+  netRole='host';
+  myTeam='red';
+  setNet('Creating room…');
+
+  peer=new Peer(
+    'gsm-football-'+roomCode,
+    peerOptions()
+  );
+
+  peer.on('open',()=>{
+    show('lobby',false);
+    show('hostSetup',true);
+    $('roomCodeText').textContent=roomCode;
+    $('copyRoomBtn').hidden=false;
+    setNet('Waiting for BLUE',false);
+  });
+
+  peer.on('connection',c=>{
+    if(conn && conn.open){
+      c.close();
+      return;
+    }
+
+    bindConn(c,true);
+  });
+
+  peer.on('disconnected',()=>{
+    setNet('Reconnecting room…',false);
+
+    if(!document.hidden){
+      resumeConnection();
+    }
+  });
+
+  peer.on('error',e=>{
+    $('lobbyStatus').textContent=
+      'Could not create room. Try again.';
+    setNet('Offline',false);
+    console.error(e);
+  });
 }
+
 function joinRoom(){
-  const code=$('roomInput').value.replace(/\D/g,'').slice(0,6);if(code.length!==6){$('lobbyStatus').textContent='Enter the 6-digit room code.';return;}roomCode=code;netRole='guest';myTeam='blue';setNet('Connecting…');peer=new Peer(undefined,{
-  host:'0.peerjs.com',
-  port:443,
-  path:'/',
-  secure:true,
-  debug:2
-});;peer.on('open',()=>{const c=peer.connect('gsm-football-'+code,{reliable:true});bindConn(c,false)});peer.on('error',e=>{$('lobbyStatus').textContent='Room not found or connection failed.';setNet('Offline',false);console.error(e)});
+  const code=$('roomInput')
+    .value
+    .replace(/\D/g,'')
+    .slice(0,6);
+
+  if(code.length!==6){
+    $('lobbyStatus').textContent=
+      'Enter the 6-digit room code.';
+    return;
+  }
+
+  roomCode=code;
+  netRole='guest';
+  myTeam='blue';
+  setNet('Connecting…');
+
+  peer=new Peer(
+    undefined,
+    peerOptions()
+  );
+
+  peer.on('open',connectGuest);
+
+  peer.on(
+    'disconnected',
+    scheduleReconnect
+  );
+
+  peer.on('error',e=>{
+    console.error(e);
+
+    if(netRole==='guest'){
+      scheduleReconnect();
+    }
+  });
 }
 
 function progressToLeft(n){return `${2+n*19}%`}
 function render(){
   const V=netRole==='host'?filtered('red'):VIEW;if(!V)return;
   $('redBalls').textContent=V.redBalls;$('blueBalls').textContent=V.blueBalls;$('redProgress').textContent=POS[V.redProgress]??'TD';$('blueProgress').textContent=POS[V.blueProgress]??'TD';$('roundText').textContent=`ROUND ${V.round}`;$('redMarker').style.left=progressToLeft(V.redProgress);$('blueMarker').style.left=progressToLeft(V.blueProgress);$('possessionText').textContent=V.offense?`${V.offense.toUpperCase()}${V.holder?' · '+V.holder:''}`:'—';$('myTeamText').textContent=`YOU ARE ${V.me.toUpperCase()}`;
+  if(V.phase==='attack'&&V.offense===V.me&&V.holder)selectedPlayer=V.holder;
   renderRoster('red',V);renderRoster('blue',V);renderHand(V);renderActions(V);renderLog(V);
   if(V.phase==='rps'){show('rpsOverlay',true);$('rpsStatus').textContent=(G?.rps?.[myTeam]||(!G&&false))?'Waiting for opponent…':'Choose one.';}else show('rpsOverlay',false);
   if(V.phase==='gameover'){show('gameOver',true);$('winnerText').textContent=(V.redBalls>=3?'RED':'BLUE')+' WINS!';}
