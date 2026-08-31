@@ -473,3 +473,4 @@ $('startBtn').onclick=()=>{createGame(selectedSize);show('hostSetup',false);broa
 document.querySelectorAll('[data-rps]').forEach(b=>b.onclick=()=>{sendAction('rps',{choice:b.dataset.rps});$('rpsStatus').textContent='Choice locked. Waiting for opponent…';});
 
 const params=new URLSearchParams(location.search);if(params.get('room')){$('roomInput').value=params.get('room').replace(/\D/g,'').slice(0,6)}
+preloadGameAssets();
