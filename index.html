@@ -32,7 +32,16 @@
         <div class="eyebrow">GOAL-SCORING MOMENT · FOOTBALL</div>
         <h1>2-PLAYER ONLINE</h1>
       </div>
-      <div class="net-pill"><span id="netDot" class="dot"></span><span id="netText">Offline</span></div>
+      <div class="net-area">
+  <div class="net-pill">
+    <span id="netDot" class="dot"></span>
+    <span id="netText">Offline</span>
+  </div>
+
+  <button id="reconnectBtn" class="reconnect-btn" hidden>
+    RECONNECT
+  </button>
+</div>
     </header>
 
     <main>
@@ -171,7 +180,7 @@
     </div>
   </div>
 
-  <script src="https://unpkg.com/peerjs@1.5.5/dist/peerjs.min.js"></script>
-  <script src="game.js"></script>
+<script src="peerjs.min.js"></script>
+<script src="game.js"></script>
 </body>
 </html>
