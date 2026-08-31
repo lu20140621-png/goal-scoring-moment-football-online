@@ -207,3 +207,130 @@
   font-weight:900;
   cursor:pointer;
 }
+/* ===== Animated football players ===== */
+
+.team-marker{
+  position:absolute;
+  top:50%;
+  left:50%;
+  transform:translate(-50%,-50%);
+  display:flex;
+  align-items:flex-end;
+  gap:3px;
+  z-index:5;
+  transition:left .75s cubic-bezier(.2,.8,.25,1);
+  filter:drop-shadow(0 4px 3px rgba(0,0,0,.35));
+}
+
+.mini-player{
+  position:relative;
+  display:block;
+  width:18px;
+  height:34px;
+  --team:#fff;
+}
+
+.red-marker .mini-player{
+  --team:#e94b4b;
+}
+
+.blue-marker .mini-player{
+  --team:#4285f4;
+}
+
+/* helmet */
+.mini-player::before{
+  content:"";
+  position:absolute;
+  top:0;
+  left:4px;
+  width:11px;
+  height:11px;
+  border-radius:50%;
+  background:var(--team);
+  border:2px solid rgba(255,255,255,.9);
+}
+
+/* body */
+.mini-player::after{
+  content:"";
+  position:absolute;
+  top:12px;
+  left:3px;
+  width:13px;
+  height:11px;
+  border-radius:4px 4px 3px 3px;
+  background:var(--team);
+}
+
+/* legs */
+.mini-player i::before,
+.mini-player i::after{
+  content:"";
+  position:absolute;
+  top:22px;
+  width:4px;
+  height:11px;
+  border-radius:3px;
+  background:#f2f2f2;
+  transform-origin:top center;
+}
+
+.mini-player i::before{
+  left:5px;
+}
+
+.mini-player i::after{
+  right:4px;
+}
+
+.mini-football{
+  font-size:20px;
+  line-height:1;
+  margin-bottom:7px;
+}
+
+/* running animation only while moving */
+.team-marker.running .mini-player{
+  animation:runnerBob .22s linear infinite alternate;
+}
+
+.team-marker.running .mini-player i::before{
+  animation:legOne .22s linear infinite alternate;
+}
+
+.team-marker.running .mini-player i::after{
+  animation:legTwo .22s linear infinite alternate;
+}
+
+@keyframes runnerBob{
+  from{transform:translateY(0)}
+  to{transform:translateY(-3px)}
+}
+
+@keyframes legOne{
+  from{transform:rotate(28deg)}
+  to{transform:rotate(-28deg)}
+}
+
+@keyframes legTwo{
+  from{transform:rotate(-28deg)}
+  to{transform:rotate(28deg)}
+}
+
+@media(max-width:720px){
+  .team-marker{
+    gap:1px;
+  }
+
+  .mini-player{
+    width:14px;
+    height:29px;
+    transform:scale(.88);
+    transform-origin:bottom;
+  }
+
+  .mini-football{
+    font-size:17px;
+  }
+}
