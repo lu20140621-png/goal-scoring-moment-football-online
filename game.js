@@ -1,14 +1,20 @@
 'use strict';
 
-const CARD_IMG={
-  RUN:'cards/run-card.webp',
-  PASS:'cards/pass-card.webp',
-  TACKLE:'cards/tackle-card.webp',
-  INTERCEPTION:'cards/interception-card.webp',
-  BLOCK:'cards/block-card.webp',
-  BLITZ:'cards/blitz-card.webp',
-  FOOTBALL:'cards/football-card.webp'
+const CARD_BASE={
+  RUN:'run-card',
+  PASS:'pass-card',
+  TACKLE:'tackle-card',
+  INTERCEPTION:'interception-card',
+  BLOCK:'block-card',
+  BLITZ:'blitz-card',
+  FOOTBALL:'football-card'
 };
+
+const CARD_IMG={};
+
+for(const [key,name] of Object.entries(CARD_BASE)){
+  CARD_IMG[key]=`cards/${name}.webp`;
+}
 const HAND={2:7,3:6,4:5};
 const POOLS={
   2:{RUN:6,PASS:6,TACKLE:5,INTERCEPTION:3,BLOCK:5,BLITZ:3},
@@ -68,10 +74,20 @@ async function preloadGameAssets(){
         };
 
         img.onerror=()=>{
-          reject(new Error('Failed to load '+src));
-        };
+  const pngSrc=src.replace('.webp','.png');
 
-        img.src=src;
+  img.onerror=()=>{
+    reject(
+      new Error(
+        'Failed to load '+src+' and '+pngSrc
+      )
+    );
+  };
+
+  img.src=pngSrc;
+};
+
+img.src=src;
       }))
     );
 
