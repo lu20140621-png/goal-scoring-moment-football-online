@@ -23,14 +23,44 @@
         <div class="team blue"><span>BLUE</span><b id="blueBalls">0</b><small>FOOTBALLS</small></div>
       </section>
 
-      <section class="field card-panel">
-        <div class="yard-labels"><span>50</span><span>40</span><span>30</span><span>20</span><span>10</span><span>TD</span></div>
-        <div class="field-lanes">
-          <div class="lane red-lane"><span class="lane-name">RED DRIVE</span><div id="redMarker" class="marker red-marker">🏈</div></div>
-          <div class="lane blue-lane"><span class="lane-name">BLUE DRIVE</span><div id="blueMarker" class="marker blue-marker">🏈</div></div>
-        </div>
-        <div class="possession">POSSESSION: <b id="possessionText">—</b></div>
-      </section>
+     <section class="field card-panel">
+  <div class="full-field">
+    <div class="endzone left-endzone">RED END ZONE</div>
+    <div class="endzone right-endzone">BLUE END ZONE</div>
+
+    <div class="yard-line y10l"></div>
+    <div class="yard-line y20l"></div>
+    <div class="yard-line y30l"></div>
+    <div class="yard-line y40l"></div>
+    <div class="yard-line y50"></div>
+    <div class="yard-line y40r"></div>
+    <div class="yard-line y30r"></div>
+    <div class="yard-line y20r"></div>
+    <div class="yard-line y10r"></div>
+
+    <div class="yard-num n10l">10</div>
+    <div class="yard-num n20l">20</div>
+    <div class="yard-num n30l">30</div>
+    <div class="yard-num n40l">40</div>
+    <div class="yard-num n50">50</div>
+    <div class="yard-num n40r">40</div>
+    <div class="yard-num n30r">30</div>
+    <div class="yard-num n20r">20</div>
+    <div class="yard-num n10r">10</div>
+
+    <div class="drive-lane red-drive">
+      <span class="lane-name">RED DRIVE</span>
+      <div id="redMarker" class="marker red-marker">🏈</div>
+    </div>
+
+    <div class="drive-lane blue-drive">
+      <span class="lane-name">BLUE DRIVE</span>
+      <div id="blueMarker" class="marker blue-marker">🏈</div>
+    </div>
+  </div>
+
+  <div class="possession">POSSESSION: <b id="possessionText">—</b></div>
+</section>
 
       <section class="teams-grid">
         <div class="card-panel roster-panel">
