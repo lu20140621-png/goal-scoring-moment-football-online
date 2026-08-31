@@ -94,7 +94,19 @@ async function preloadGameAssets(){
 
 $('retryLoadBtn').onclick=preloadGameAssets;
 function show(id,on=true){$(id).classList.toggle('show',on)}
-function setNet(text,on=false){$('netText').textContent=text;$('netDot').classList.toggle('on',on)}
+function setNet(text,on=false){
+  $('netText').textContent=text;
+  $('netDot').classList.toggle('on',on);
+
+  const btn=$('reconnectBtn');
+
+  if(btn){
+    btn.hidden=
+      on ||
+      netRole!=='guest' ||
+      !roomCode;
+  }
+}
 function addLocalLog(msg){if(netRole==='host'&&G){G.logs.push(msg);if(G.logs.length>80)G.logs.shift();} }
 function shuffle(a){for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
 function other(t){return t==='red'?'blue':'red'}
@@ -309,10 +321,53 @@ function connectGuest(){
 function scheduleReconnect(){
   if(netRole!=='guest' || !roomCode)return;
 
+  setNet('Reconnecting…',false);
+
+  try{
+    if(conn){
+      conn.close();
+    }
+  }catch(e){}
+
+  try{
+    if(peer){
+      peer.destroy();
+    }
+  }catch(e){}
+
+  conn=null;
+  peer=null;
+
+  setTimeout(()=>{
+    peer=new Peer(
+      undefined,
+      peerOptions()
+    );
+
+    peer.on('open',()=>{
+      connectGuest();
+    });
+
+    peer.on('disconnected',()=>{
+      scheduleReconnect();
+    });
+
+    peer.on('error',e=>{
+      console.error(e);
+      setNet('Tap RECONNECT',false);
+    });
+
+  },500);
+}
+  if(netRole!=='guest' || !roomCode)return;
+
   clearTimeout(reconnectTimer);
 
   reconnectTimer=setTimeout(()=>{
-    if(!peer || peer.destroyed)return;
+    if(!peer || peer.destroyed){
+  hardReconnect();
+  return;
+}
 
     if(peer.disconnected){
       try{
@@ -505,3 +560,4 @@ document.querySelectorAll('[data-rps]').forEach(b=>b.onclick=()=>{sendAction('rp
 
 const params=new URLSearchParams(location.search);if(params.get('room')){$('roomInput').value=params.get('room').replace(/\D/g,'').slice(0,6)}
 preloadGameAssets();
+$('reconnectBtn').onclick=hardReconnect;
