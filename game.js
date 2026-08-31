@@ -183,7 +183,34 @@ function peerOptions(){
     port:443,
     path:'/',
     secure:true,
-    debug:2
+    debug:2,
+    config:{
+      iceServers:[
+        {
+          urls:'stun:stun.relay.metered.ca:80'
+        },
+        {
+          urls:'turn:global.relay.metered.ca:80',
+          username:'0b9c252c8062717fa1b0d343',
+          credential:'HdOgKLjqRvkOgbzk'
+        },
+        {
+          urls:'turn:global.relay.metered.ca:80?transport=tcp',
+          username:'0b9c252c8062717fa1b0d343',
+          credential:'HdOgKLjqRvkOgbzk'
+        },
+        {
+          urls:'turn:global.relay.metered.ca:443',
+          username:'0b9c252c8062717fa1b0d343',
+          credential:'HdOgKLjqRvkOgbzk'
+        },
+        {
+          urls:'turns:global.relay.metered.ca:443?transport=tcp',
+          username:'0b9c252c8062717fa1b0d343',
+          credential:'HdOgKLjqRvkOgbzk'
+        }
+      ]
+    }
   };
 }
 
