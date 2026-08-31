@@ -334,3 +334,23 @@
     font-size:17px;
   }
 }
+.net-area{
+  display:flex;
+  align-items:center;
+  gap:7px;
+}
+
+.reconnect-btn{
+  border:1px solid #f2c65a;
+  background:#f2c65a;
+  color:#171305;
+  border-radius:999px;
+  padding:7px 11px;
+  font-size:11px;
+  font-weight:900;
+  cursor:pointer;
+}
+
+.reconnect-btn[hidden]{
+  display:none;
+}
