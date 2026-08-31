@@ -440,10 +440,32 @@ function joinRoom(){
   });
 }
 
-function progressToLeft(n){return `${2+n*19}%`}
+function redProgressLeft(n){
+  return `${50+n*8}%`;
+}
+
+function blueProgressLeft(n){
+  return `${50-n*8}%`;
+}
 function render(){
   const V=netRole==='host'?filtered('red'):VIEW;if(!V)return;
-  $('redBalls').textContent=V.redBalls;$('blueBalls').textContent=V.blueBalls;$('redProgress').textContent=POS[V.redProgress]??'TD';$('blueProgress').textContent=POS[V.blueProgress]??'TD';$('roundText').textContent=`ROUND ${V.round}`;$('redMarker').style.left=progressToLeft(V.redProgress);$('blueMarker').style.left=progressToLeft(V.blueProgress);$('possessionText').textContent=V.offense?`${V.offense.toUpperCase()}${V.holder?' · '+V.holder:''}`:'—';$('myTeamText').textContent=`YOU ARE ${V.me.toUpperCase()}`;
+  $('redBalls').textContent=V.redBalls;$('blueBalls').textContent=V.blueBalls;$('redProgress').textContent=POS[V.redProgress]??'TD';$('blueProgress').textContent=POS[V.blueProgress]??'TD';$('roundText').textContent=`ROUND ${V.round}`;$('redMarker').style.left=redProgressLeft(V.redProgress);$('blueMarker').style.left=blueProgressLeft(V.blueProgress);;$('possessionText').textContent=V.offense?`${V.offense.toUpperCase()}${V.holder?' · '+V.holder:''}`:'—';$('myTeamText').textContent=`YOU ARE ${V.me.toUpperCase()}`;
+  const redTeam=$('redMarker');
+const blueTeam=$('blueMarker');
+
+redTeam.classList.add('running');
+blueTeam.classList.add('running');
+
+clearTimeout(redTeam.runTimer);
+clearTimeout(blueTeam.runTimer);
+
+redTeam.runTimer=setTimeout(()=>{
+  redTeam.classList.remove('running');
+},750);
+
+blueTeam.runTimer=setTimeout(()=>{
+  blueTeam.classList.remove('running');
+},750);
   if(V.phase==='attack'&&V.offense===V.me&&V.holder)selectedPlayer=V.holder;
   renderRoster('red',V);renderRoster('blue',V);renderHand(V);renderActions(V);renderLog(V);
   if(V.phase==='rps'){show('rpsOverlay',true);$('rpsStatus').textContent=(G?.rps?.[myTeam]||(!G&&false))?'Waiting for opponent…':'Choose one.';}else show('rpsOverlay',false);
