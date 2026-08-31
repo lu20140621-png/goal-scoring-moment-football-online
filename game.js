@@ -1,13 +1,13 @@
 'use strict';
 
 const CARD_IMG={
-  RUN:'cards/run-card.png',
-  PASS:'cards/pass-card.png',
-  TACKLE:'cards/tackle-card.png',
-  INTERCEPTION:'cards/interception-card.png',
-  BLOCK:'cards/block-card.png',
-  BLITZ:'cards/blitz-card.png',
-  FOOTBALL:'cards/football-card.png'
+  RUN:'cards/run-card.webp',
+  PASS:'cards/pass-card.webp',
+  TACKLE:'cards/tackle-card.webp',
+  INTERCEPTION:'cards/interception-card.webp',
+  BLOCK:'cards/block-card.webp',
+  BLITZ:'cards/blitz-card.webp',
+  FOOTBALL:'cards/football-card.webp'
 };
 const HAND={2:7,3:6,4:5};
 const POOLS={
