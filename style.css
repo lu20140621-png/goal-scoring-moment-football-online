@@ -128,3 +128,82 @@
   text-align:center;
   font-weight:800;
 }
+.loading-screen{
+  position:fixed;
+  inset:0;
+  z-index:9999;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  background:
+    radial-gradient(circle at center,#174d32 0,#07150f 60%,#020604 100%);
+  transition:opacity .45s ease,visibility .45s ease;
+}
+
+.loading-screen.done{
+  opacity:0;
+  visibility:hidden;
+  pointer-events:none;
+}
+
+.loading-box{
+  width:min(360px,84vw);
+  text-align:center;
+}
+
+.loading-football{
+  font-size:58px;
+  animation:footballLoad 1s ease-in-out infinite;
+}
+
+@keyframes footballLoad{
+  0%,100%{transform:translateY(0) rotate(-12deg)}
+  50%{transform:translateY(-14px) rotate(12deg)}
+}
+
+.loading-box h2{
+  margin:10px 0 18px;
+  font-size:20px;
+  letter-spacing:.14em;
+}
+
+.loading-bar{
+  height:12px;
+  overflow:hidden;
+  border-radius:999px;
+  border:1px solid rgba(255,255,255,.22);
+  background:rgba(255,255,255,.08);
+}
+
+.loading-fill{
+  width:0%;
+  height:100%;
+  border-radius:999px;
+  background:#f2c65a;
+  transition:width .25s ease;
+}
+
+.loading-percent{
+  margin-top:9px;
+  font-size:18px;
+  font-weight:900;
+  color:#f2c65a;
+}
+
+.loading-text{
+  margin-top:5px;
+  min-height:20px;
+  font-size:12px;
+  color:#b9c9bd;
+}
+
+.loading-retry{
+  margin-top:14px;
+  padding:10px 24px;
+  border:0;
+  border-radius:10px;
+  background:#f2c65a;
+  color:#151005;
+  font-weight:900;
+  cursor:pointer;
+}
