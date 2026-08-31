@@ -20,6 +20,8 @@ const $=id=>document.getElementById(id);
 let peer=null,conn=null,netRole=null,myTeam=null,roomCode='',selectedSize=2,selectedPlayer=null;
 let G=null,VIEW=null;
 let reconnectTimer=null;
+let lastRedProgress=null;
+let lastBlueProgress=null;
 let assetsReady=false;
 
 const GAME_ASSETS=[
@@ -450,22 +452,29 @@ function blueProgressLeft(n){
 function render(){
   const V=netRole==='host'?filtered('red'):VIEW;if(!V)return;
   $('redBalls').textContent=V.redBalls;$('blueBalls').textContent=V.blueBalls;$('redProgress').textContent=POS[V.redProgress]??'TD';$('blueProgress').textContent=POS[V.blueProgress]??'TD';$('roundText').textContent=`ROUND ${V.round}`;$('redMarker').style.left=redProgressLeft(V.redProgress);$('blueMarker').style.left=blueProgressLeft(V.blueProgress);;$('possessionText').textContent=V.offense?`${V.offense.toUpperCase()}${V.holder?' · '+V.holder:''}`:'—';$('myTeamText').textContent=`YOU ARE ${V.me.toUpperCase()}`;
-  const redTeam=$('redMarker');
+const redTeam=$('redMarker');
 const blueTeam=$('blueMarker');
 
-redTeam.classList.add('running');
-blueTeam.classList.add('running');
+if(lastRedProgress!==null && V.redProgress!==lastRedProgress){
+  redTeam.classList.add('running');
+  clearTimeout(redTeam.runTimer);
 
-clearTimeout(redTeam.runTimer);
-clearTimeout(blueTeam.runTimer);
+  redTeam.runTimer=setTimeout(()=>{
+    redTeam.classList.remove('running');
+  },750);
+}
 
-redTeam.runTimer=setTimeout(()=>{
-  redTeam.classList.remove('running');
-},750);
+if(lastBlueProgress!==null && V.blueProgress!==lastBlueProgress){
+  blueTeam.classList.add('running');
+  clearTimeout(blueTeam.runTimer);
 
-blueTeam.runTimer=setTimeout(()=>{
-  blueTeam.classList.remove('running');
-},750);
+  blueTeam.runTimer=setTimeout(()=>{
+    blueTeam.classList.remove('running');
+  },750);
+}
+
+lastRedProgress=V.redProgress;
+lastBlueProgress=V.blueProgress;
   if(V.phase==='attack'&&V.offense===V.me&&V.holder)selectedPlayer=V.holder;
   renderRoster('red',V);renderRoster('blue',V);renderHand(V);renderActions(V);renderLog(V);
   if(V.phase==='rps'){show('rpsOverlay',true);$('rpsStatus').textContent=(G?.rps?.[myTeam]||(!G&&false))?'Waiting for opponent…':'Choose one.';}else show('rpsOverlay',false);
